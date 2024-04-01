@@ -2,17 +2,17 @@
 """         ARULE IN PYTHON DEMO FOR THE "DEMO2" CASE STUDY            """
 """        © 2023 Ridgetop Group, Inc., All Rights Reserved            """
 # ========================================================================
-print("##### ARULEinPython: Starting Demo...")
 
 # Import Libraries and Functions
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from createDEF import createSDEF, createNDEF
 import subprocess
 import sys
 from termcolor import colored
-
+print("##### ARULEinPython:", colored(' !!! WELCOME TO ADAPTIVE REMAINING USEFUL LIFE ESTIMATOR (ARULE) !!!', 'yellow'))
+from createDEF import createSDEF, createNDEF
+from ARULE4PythonUtils import readlog, readDEFcontents, readARULEOutput, plotARULEOutput
 print("##### ARULEinPython:", colored('Finished importing libraries and functions!', 'green'))
 
 # Initialize SDEF & NDEF for Demo2
@@ -41,28 +41,22 @@ ndefnames = [os.path.splitext(filename)[0] for filename in ndeffilenames]
 # Conditional for pre-packaging
 if pre_packaged == True:
     pass
-    print("##### ARULEinPython:", colored('SDEF & NDEF Files pre-packaged! Running UD_ARULE now.', 'yellow'))
+    print("##### ARULEinPython:", colored('SDEF & NDEF Files pre-packaged! Running UD_ARULE now...', 'yellow'))
 elif pre_packaged == False:
     createSDEF(system_node_list, sdefdirectory, sdeffilename, sdefname) # Call the createSDEF function
     for i, params in enumerate(node_params):
         ndeffilename = ndeffilenames[i]
         ndefname = ndefnames[i]
         createNDEF(params, ndefdirectory, ndeffilename, ndefname) # Call the createNDEF function
-    print("##### ARULEinPython:", colored('SDEF & NDEF Created! Running UD_ARULE now.', 'green'))
-
-# Read and Display Log Function
-def readlog(sdefname):
-    log_file_path = f"ARULE\\DATA\\LOG\\UD_ARULE_LOG_{sdefname}.txt"  # Update this with the actual path to your log file
-    with open(log_file_path, 'r') as file:
-        # Read the contents of the file
-        log_contents = file.read()
-        # Print the contents of the log file
-    print("##### ARULEinPython:", colored(f'UD_ARULE_LOG_{sdefname}:', 'green'))
-    print(log_contents)
-    return None
+    print("##### ARULEinPython:", colored('SDEF & NDEF Created! Running UD_ARULE now...', 'green'))
 
 ### Call ARULEforWindows.exe using subprocess
+print("##### ARULEinPython:", colored(f'RGI DLM License Check Commencing...', 'green'))
 command = ['ARULE4Python.exe', "DEMO2", "./"]
 subprocess.run(command, check=True)
-readlog(sdefname)
+#readlog(sdefname)
 print("##### ARULEinPython:", colored('ARULE Run Complete!', 'green'))
+
+### Plot ARULE Results
+ndefparams = readDEFcontents(sdefname)
+plotARULEOutput(sdefname, ndefparams, show=True)

@@ -1,0 +1,12 @@
+%********************************************************
+% DEMO2 System Definition (SDEF)
+% Each line is a maximum of eighty (80) characters!
+%********************************************************
+NDNUMID = 1;				 % Node Definition Number
+NDFNAME = 'DEMO2_NODE1';	 % Node Definition Filename
+NDNUMID = 2;				 % Node Definition Number
+NDFNAME = 'DEMO2_NODE2';	 % Node Definition Filename
+NDNUMID = 3;				 % Node Definition Number
+NDFNAME = 'DEMO2_NODE3';	 % Node Definition Filename
+%********************************************************
+ENDDEF = -9;				 % End of Node Definition
