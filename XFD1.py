@@ -1,6 +1,6 @@
 # ========================================================================
-"""         ARULE IN PYTHON DEMO FOR THE "DEMO2" CASE STUDY            """
-"""        © 2023 Ridgetop Group, Inc., All Rights Reserved            """
+"""         ARULE IN PYTHON DEMO FOR THE "XFD1" CASE STUDY            """
+"""        © 2024 Ridgetop Group, Inc., All Rights Reserved            """
 # ========================================================================
 
 # Import Libraries and Functions
@@ -15,27 +15,29 @@ from createDEF import createSDEF, createNDEF
 from ARULE4PythonUtils import readlog, readDEFcontents, readARULEOutput, plotARULEOutput
 print("##### ARULEinPython:", colored('Finished importing libraries and functions!', 'green'))
 
-# Initialize SDEF & NDEF for Demo2
+# Initialize SDEF & NDEF for DEMO2
 pre_packaged = False # Are the SDEF/NDEF pre-packaged? (True/False)
 
 # If False was chosen above do not edit this!
+sysname = 'XFD1' # Name of the System
+nodename1 = 'TPWR' # Name of NODE1
+nodename2 = 'TPWRB' # Name of NODE2
+
 ### SDEF
 system_node_list = [
-    (1, 'DEMO2_NODE1', -9),
-    (2, 'DEMO2_NODE2', -9),
-    (3, 'DEMO2_NODE3', -9)
+    (1, f'{sysname}_{nodename1}', -9),
+    (2, f'{sysname}_{nodename2}', -9)
 ]
 sdefdirectory = "ARULE\\DEFS\\SDEF"  # Specify your desired directory here
-sdeffilename = "DEMO2.txt"
+sdeffilename = f"{sysname}.txt"
 sdefname = os.path.splitext(sdeffilename)[0]
 ### NDEF
 node_params = [
-    (24.000, 0.000, 5.000, 10, 5, 1.265, 67.000, 220.000, 2, 'SP4000_1', '.txt', '.csv', -9), 
-    (24.000, 0.000, 5.000, 10, 5, 1.285, 73.000, 220.000, 2, 'SP4000_1', '.txt', '.csv', -9),
-    (24.000, 0.000, 5.000, 10, 5, 1.275, 70.000, 220.000, 2, 'SP4000_2', '.csv', '.csv', -9)
+    (130.000, 0.000, 4.000, 0, 5, 1.4, 70.000, 60.000, 5, 'TPWR', '.csv', '.csv', -9), 
+    (130.000, 0.000, 4.000, 0, 5, 1.4, 70.000, 200.000, 5, 'TPWR', '.csv', '.csv', -9)
 ]
 ndefdirectory = "ARULE\\DEFS\\NDEF"  # Specify your desired directory here
-ndeffilenames = ["DEMO2_NODE1.txt", "DEMO2_NODE2.txt", "DEMO2_NODE3.txt"]
+ndeffilenames = [f"{sysname}_{nodename1}.txt", f"{sysname}_{nodename2}.txt"]
 ndefnames = [os.path.splitext(filename)[0] for filename in ndeffilenames]
 
 # Conditional for pre-packaging
@@ -51,12 +53,13 @@ elif pre_packaged == False:
     print("##### ARULEinPython:", colored('SDEF & NDEF Created! Running UD_ARULE now...', 'green'))
 
 ### Call ARULEforWindows.exe using subprocess
-print("##### ARULEinPython:", colored(f'RGI DLM License Check Commencing...', 'green'))
-command = ['ARULE4Python.exe', "DEMO2", "./"]
+print("##### ARULEinPython:", colored(f'Ridgetop DLM License Check & UD_ARULE Run Commencing...', 'green'))
+command = ['UD_ARULE.exe', "XFD1", "2", "0", "1", "./"]
 subprocess.run(command, check=True)
 #readlog(sdefname)
-print("##### ARULEinPython:", colored('ARULE Run Complete!', 'green'))
+print("##### ARULEinPython:", colored('UD_ARULE Run Complete!', 'green'))
 
 ### Plot ARULE Results
 ndefparams = readDEFcontents(sdefname)
-plotARULEOutput(sdefname, ndefparams, show=True)
+plotARULEOutput(sdefname, ndefparams, show=False)
+print("##### ARULEinPython:", colored('Thanks for using ARULE in Python! © Ridgetop Group Inc., 2019-2024', 'red'))

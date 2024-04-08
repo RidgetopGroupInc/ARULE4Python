@@ -1,5 +1,5 @@
 %********************************************************************************************************
-% DEMO2_NODE2 Node Definition (NDEF)
+% DEMO1_NODE1 Node Definition (NDEF)
 %********************************************************************************************************
 %**Feature Data: FD = FDZ*(dP/P)^FDNV + DC + NOISE
 FDC = 24.0;			 % Feature Data, DC
@@ -7,8 +7,8 @@ FDZ = 0.0;			 % Nominal FD0 value for AC coefficient: 0=use FDC
 FDNM = 5.0;			 % Percent Noise Margin
 FDCPTS = 10;			 % Data points to average for FDC: up to 25
 FDPTS = 5;			 % Data points to average for FD: up to 5
-FDNV = 1.285;			 % Degradation Power n
-FFPFAIL = 73.0;			 % Functional Failure Margin - percent above nominal
+FDNV = 1.275;			 % Degradation Power n
+FFPFAIL = 70.0;			 % Functional Failure Margin - percent above nominal
 %**Prognostic Modeling
 PITTFF = 220.0;			 % Default RUL = TTFF value
 PIFFSMOD = 2;			 % Model (1=Convex, 2=Linear, 3=Concave, 4=Convex-Concave, 5=Concave-Convex)

@@ -1,16 +1,19 @@
 # ========================================================================
 """               UTILITIES FOR ARULE IN PYTHON DEMO                   """
-"""        © 2023 Ridgetop Group, Inc., All Rights Reserved            """
+"""        © 2024 Ridgetop Group, Inc., All Rights Reserved            """
 # ========================================================================
 
 # Import Libraries and Functions
 import re
 import os
+import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 import matplotlib.dates as mdates
 import matplotlib.font_manager as font_manager
+import matplotlib.patches as patches
+from matplotlib.transforms import Bbox
 from termcolor import colored
 
 ### FUNCTIONS
@@ -40,16 +43,15 @@ def readDEFcontents(sdefname):
     @returns: A list of the contents in the NDEF for all nodes
     """
     # Read the contents from SDEF
-    sdefpath = f'ARULE\\DEFS\\SDEF\\{sdefname}.txt'  # Replace 'path_to_your_file.txt' with the actual file path
+    sdefpath = f'ARULE\\DEFS\\SDEF\\{sdefname}.txt'  
     with open(sdefpath, 'r') as sdeffile:
         sdeftext = sdeffile.read()
-    ndefnames = re.findall(r"NDFNAME\s*=\s*'([^']+)'", sdeftext)
+    ndefnames = re.findall(r"NDFNAME\s*=\s*'([^']+)", sdeftext)
+    ndefids = re.findall(r"NDNUMID\s*=\s*(\d+)", sdeftext)
     ndefparams = []
-    for ndefname in ndefnames:
+    for ndefname, ndefid in zip(ndefnames, ndefids):
         # Read the contents from NDEF
         ndefpath = f'ARULE\\DEFS\\NDEF\\{ndefname}.txt'
-        ndefidmain = ndefname.split('_')[1]
-        ndefid = [ndefid for ndefid in ndefidmain][-1]
         with open(ndefpath, 'r') as ndeffile:
             ndeftext = ndeffile.read()
         parameters = []
@@ -89,6 +91,22 @@ def readARULEOutput(filepath):
     rs1 = output_data['RS0']      # Reason for indicated RC
     return flag, dt, da, rul, ph, soh, bd, eol, fdnom, fd, ffp, dps, ffs, ffin, rc0, rs0, rs1
 
+# findBDandEOL Function
+def findBDandEOL(dt,bd,eol):
+    """
+    Find time-indexes of Beginning of Degradation (BD) and End of Life (EOL).
+
+    dt: Array of Time values
+    bd: Array of BD values output by ARULE
+    eol: Array of EOL values output by ARULE
+    @returns: bd_time_index, eol_time_index
+    """
+    est_bd_time = bd.iloc[-1]
+    bd_time_index = np.where(dt == est_bd_time)
+    est_eol_time = eol.iloc[-1]
+    eol_time_index = np.where(dt == est_eol_time)
+    return bd_time_index, eol_time_index
+
 # plotARULEOutput Function
 def plotARULEOutput(sdefname, ndefparams, show=True):
     """
@@ -122,40 +140,64 @@ def plotARULEOutput(sdefname, ndefparams, show=True):
         print("##### ARULEinPython:", colored(f'Finished Reading ARULE Results for {ndefname}!', 'green'))
         print("##### ARULEinPython:", colored(f'Plotting ARULE Results for {ndefname} ...', 'green'))
         # Plot Columns
-        f, ax = plt.subplots(4,2, figsize=(20,10), sharex=True)
+        f, ax = plt.subplots(4,2, figsize=(25,12), sharex=True)
         title_font = font_manager.FontProperties(family= 'Sans Serif', weight='bold', style='normal', size=20)
         label_font = font_manager.FontProperties(family= 'Sans Serif', weight='bold', style='normal', size=16)
         legend_font = font_manager.FontProperties(family= 'Sans Serif', weight='bold', style='normal', size=12)
         title = f"{ndefname} ARULE Output"
         titletext = plt.suptitle(title, fontproperties=title_font)
         titletext.set_color('blue')
-        ax[0,0].plot(dt, da, 'r-', lw = 2, label=f'Data Amplitude')
-        ax[0,0].set_ylabel(r'DA [AU]', fontproperties=label_font)
-        ax[1,0].plot(dt, fd, 'r-', lw = 2, label=f'Feature Data')
-        ax[1,0].set_ylabel(r'FD [AU]', fontproperties=label_font)
-        ax[2,0].plot(dt, soh, 'r-', lw = 2, label=f'State-of-Health')
-        ax[2,0].set_ylabel(r'SoH [%]', fontproperties=label_font)
-        ax[3,0].plot(dt, rul, 'm-', lw = 2, label=f'Remaining Useful Life')
-        ax[3,0].plot(dt, ph, 'c-', lw = 2, label=f'Prognostic Horizon')
-        ax[3,0].set_ylabel(r'RUL/PH [AU]', fontproperties=label_font)
-        ax[3,0].set_xlabel(r'Time [AU]', fontproperties=label_font)
-        ax[0,1].plot(dt, ffp, 'r-', lw = 2, label=f'FFP Signature')
+        bd_time_index, eol_time_index = findBDandEOL(dt,bd,eol)
+        # Plot FD
+        ax[0,0].plot(dt, da, 'k-', lw = 2, label=f'Feature Data')
+        ax[0,0].vlines(dt.iloc[bd_time_index], np.amin(da), np.amax(da), linestyle='--', lw=3, color='green', label='Beginning of Degradation')
+        ax[0,0].vlines(dt.iloc[eol_time_index], np.amin(da), np.amax(da), linestyle='--', lw=3, color='red', label='End of Life')
+        ax[0,0].set_ylim(np.amin(da), np.amax(da))
+        ax[0,0].set_ylabel(r'FD [AU]', fontproperties=label_font)
+        #Plot SoH
+        ax[1,0].plot(dt, soh, 'k-', lw = 2, label=f'State-of-Health')
+        ax[1,0].scatter(dt.iloc[bd_time_index], soh.iloc[bd_time_index], s=100, lw=2, color='green', edgecolor='green', facecolors='none')
+        ax[1,0].scatter(dt.iloc[eol_time_index], soh.iloc[eol_time_index], s=100, lw=2, color='red', edgecolor='red', facecolors='none')
+        ax[1,0].set_ylabel(r'SoH [%]', fontproperties=label_font)
+        # Plot RUL/PH
+        ax[2,0].plot(dt, rul, 'm-', lw = 2, label=f'Remaining Useful Life')
+        ax[2,0].plot(dt, ph, 'c-', lw = 2, label=f'Prognostic Horizon')
+        ax[2,0].scatter(dt.iloc[bd_time_index], rul.iloc[bd_time_index], s=100, lw=2, color='green', edgecolor='green', facecolors='none')
+        ax[2,0].scatter(dt.iloc[eol_time_index], rul.iloc[eol_time_index], s=100, lw=2, color='red', edgecolor='red', facecolors='none')
+        ax[2,0].scatter(dt.iloc[eol_time_index], ph.iloc[eol_time_index], s=100, lw=2, color='red', edgecolor='red', facecolors='none')
+        ax[2,0].set_ylabel(r'RUL/PH [AU]', fontproperties=label_font)
+        ax[2,0].set_xlabel(r'Time [AU]', fontproperties=label_font)
+        ax[2,0].xaxis.set_tick_params(which='both', labelbottom=True)
+        ax[3,0].axis('off')
+        # Plot FFP
+        ax[0,1].plot(dt, ffp, 'k-', lw = 2, label=f'FFP Signature')
+        ax[0,1].scatter(dt.iloc[bd_time_index], ffp.iloc[bd_time_index], s=100, lw=2, color='green', edgecolor='green', facecolors='none')
+        ax[0,1].scatter(dt.iloc[eol_time_index], ffp.iloc[eol_time_index], s=100, lw=2, color='red', edgecolor='red', facecolors='none')
         ax[0,1].set_ylabel(r'FFP [AU]', fontproperties=label_font)
-        ax[1,1].plot(dt, dps, 'r-', lw = 2, label=f'DPS Signature')
+        #Plot DPS
+        ax[1,1].plot(dt, dps, 'k-', lw = 2, label=f'DPS Signature')
+        ax[1,1].scatter(dt.iloc[bd_time_index], dps.iloc[bd_time_index], s=100, lw=2, color='green', edgecolor='green', facecolors='none')
+        ax[1,1].scatter(dt.iloc[eol_time_index], dps.iloc[eol_time_index], s=100, lw=2, color='red', edgecolor='red', facecolors='none')
         ax[1,1].set_ylabel(r'DPS [AU]', fontproperties=label_font)
-        ax[2,1].plot(dt, ffs, 'r-', lw = 2, label=f'FFS Signature')
+        # Plot FFS
+        ax[2,1].plot(dt, ffs, 'k-', lw = 2, label=f'FFS Signature')
+        ax[2,1].scatter(dt.iloc[bd_time_index], ffs.iloc[bd_time_index], s=100, lw=2, color='green', edgecolor='green', facecolors='none')
+        ax[2,1].scatter(dt.iloc[eol_time_index], ffs.iloc[eol_time_index], s=100, lw=2, color='red', edgecolor='red', facecolors='none')
         ax[2,1].set_ylabel(r'FFS [AU]', fontproperties=label_font)
-        ax[3,1].plot(dt, ffin, 'r-', lw = 2, label=f'Functional Failure Input')
+        # Plot FFIN
+        ax[3,1].plot(dt, ffin, 'k-', lw = 2, label=f'Functional Failure Input')
+        ax[3,1].scatter(dt.iloc[bd_time_index], ffin.iloc[bd_time_index], s=100, lw=2, color='green', edgecolor='green', facecolors='none')
+        ax[3,1].scatter(dt.iloc[eol_time_index], ffin.iloc[eol_time_index], s=100, lw=2, color='red', edgecolor='red', facecolors='none')
         ax[3,1].set_ylabel(r'FFIN [AU]', fontproperties=label_font)
         ax[3,1].set_xlabel(r'Time [AU]', fontproperties=label_font)
         #ax.fill_between(fft_data.index, fft_data[col], alpha=0.2, label='')
         for a in ax.flat:
             a.grid("on")
-            a.legend(loc='upper right', prop=legend_font)
+            a.legend(loc='best', prop=legend_font)
             a.xaxis.set_minor_locator(AutoMinorLocator())
             a.yaxis.set_minor_locator(AutoMinorLocator())
-        plt.gcf().autofmt_xdate()
         f.tight_layout(h_pad=1, w_pad=3)
+        plt.subplots_adjust(hspace=0.1)
         for a in ax.flat:
             plt.setp(a.xaxis.get_majorticklabels(), size='large')
             plt.setp(a.yaxis.get_majorticklabels(), size='large')
@@ -172,5 +214,5 @@ def plotARULEOutput(sdefname, ndefparams, show=True):
         else:
             plt.close()
         print("##### ARULEinPython:", colored(f'Finished Plotting ARULE Results for {ndefname}!', 'green'))
-        print("##### ARULEinPython:", colored(f'{output_filename} can be located in ARULE4Python\{save_directory}.', 'yellow'))
-        return None
+        print("##### ARULEinPython:", colored(f'{output_filename} can be located in ARULE4Python/{save_directory}.', 'yellow'))
+    return None
