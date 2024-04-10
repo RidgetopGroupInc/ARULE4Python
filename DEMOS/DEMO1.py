@@ -17,6 +17,31 @@ parent_directory = os.path.abspath(os.path.join(current_directory, '..'))
 arule_directory = os.path.join(parent_directory,'ARULE\\')
 plots_directory = os.path.join(parent_directory,'PLOTS\\')
 utils_directory = os.path.join(parent_directory,'UTILS\\')
+### ARULE Directory Checks
+data_dir = os.path.join(arule_directory,'DATA\\')
+if not os.path.exists(data_dir):
+    os.makedirs(data_dir)
+cpt_dir = os.path.join(data_dir,'CPT\\')
+if not os.path.exists(cpt_dir):
+    os.makedirs(cpt_dir)
+dout_dir = os.path.join(data_dir,'DOUT\\')
+if not os.path.exists(dout_dir):
+    os.makedirs(dout_dir)
+log_dir = os.path.join(data_dir,'LOG\\')
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+save_dir = os.path.join(save_dir,'DOUT\\')
+if not os.path.exists(save_dir):
+    os.makedirs(save_dir)
+defs_dir = os.path.join(arule_directory,'DEFS\\')
+if not os.path.exists(defs_dir):
+    os.makedirs(defs_dir)
+sdef_dir = os.path.join(defs_dir,'SDEF\\')
+if not os.path.exists(sdef_dir):
+    os.makedirs(sdef_dir)
+ndef_dir = os.path.join(defs_dir,'NDEF\\')
+if not os.path.exists(ndef_dir):
+    os.makedirs(ndef_dir)
 ### Import Functions
 sys.path.append(utils_directory)
 from createDEF import createSDEF, createNDEF
