@@ -30,9 +30,6 @@ if not os.path.exists(dout_dir):
 log_dir = os.path.join(data_dir,'LOG\\')
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
-save_dir = os.path.join(save_dir,'DOUT\\')
-if not os.path.exists(save_dir):
-    os.makedirs(save_dir)
 defs_dir = os.path.join(arule_directory,'DEFS\\')
 if not os.path.exists(defs_dir):
     os.makedirs(defs_dir)
@@ -54,14 +51,11 @@ pre_packaged = False # Are the SDEF/NDEF pre-packaged? (True/False)
 
 # If False was chosen above do not edit this!
 sysname = 'DEMO2' # Name of the System
-nodename1 = 'NODE1'  # Name of NODE1
-nodename2 = 'NODE2'  # Name of NODE2
-nodename3 = 'NODE3'  # Name of NODE3
+nodenames = ['NODE1', 'NODE2', 'NODE3']  # Name of Nodes
+
 ### SDEF
 system_node_list = [
-    (1, f'{sysname}_{nodename1}', -9),
-    (2, f'{sysname}_{nodename2}', -9),
-    (3, f'{sysname}_{nodename3}', -9)
+    (i+1, f'{sysname}_{node}', -9) for i, node in enumerate(nodenames)
 ]
 sdefdirectory = os.path.join(arule_directory, "DEFS\\SDEF\\")
 sdeffilename = f"{sysname}.txt"
@@ -73,7 +67,7 @@ node_params = [
     (24.000, 0.000, 5.000, 10, 5, 1.275, 70.000, 220.000, 2, 'SP4000_2', '.csv', '.csv', -9)
 ]
 ndefdirectory = os.path.join(arule_directory, "DEFS\\NDEF\\")
-ndeffilenames = [f"{sysname}_{nodename1}.txt", f"{sysname}_{nodename2}.txt", f"{sysname}_{nodename3}.txt"]
+ndeffilenames = [f"{sysname}_{node}.txt" for node in nodenames]
 ndefnames = [os.path.splitext(filename)[0] for filename in ndeffilenames]
 
 # Conditional for pre-packaging
