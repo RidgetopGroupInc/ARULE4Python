@@ -57,7 +57,7 @@ def readDEFcontents(sdefname):
         parameters = []
         parameters.append(ndefid)
         parameters.append(ndefname)
-        matches = re.findall(r'(\w+)\s*=\s*([\w.]+);', ndeftext)
+        matches = re.findall(r'(\w+)\s*=\s*([\w.-]+);', ndeftext)
         for match in matches:
             parameters.append(match[1])
         ndefparams.append(parameters)
